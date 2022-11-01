@@ -45,7 +45,7 @@ public class MovingLightningBolt extends SimpleLightningBolt {
 
         Collections.sort(positions);
 
-        sway = 400.0f;
+        sway = 100.0f;
         jaggedness = 1 / sway;
 
         prevPoint = source;

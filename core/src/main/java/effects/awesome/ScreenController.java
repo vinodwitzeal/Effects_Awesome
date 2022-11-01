@@ -4,8 +4,11 @@ package effects.awesome;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import dev.lyze.gdxtinyvg.TinyVG;
+import dev.lyze.gdxtinyvg.TinyVGAssetLoader;
 import effects.awesome.ui.screens.BoardScreen;
 import effects.awesome.ui.screens.DailySpinScreen;
 import effects.awesome.ui.screens.UIScreen;
@@ -13,12 +16,14 @@ import effects.awesome.ui.screens.UIScreen;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class ScreenController implements ApplicationListener {
 	private UIScreen screen;
+	public TinyVGAssetLoader tinyVGAssetLoader;
 	public ScreenController(){
 
 	}
 
 	@Override
 	public void create() {
+		tinyVGAssetLoader=new TinyVGAssetLoader();
 		setScreen(new BoardScreen(this));
 	}
 

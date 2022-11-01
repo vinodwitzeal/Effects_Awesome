@@ -3,12 +3,17 @@ package effects.awesome.lightning;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.crashinvaders.vfx.VfxManager;
+import com.crashinvaders.vfx.effects.BloomEffect;
+import com.crashinvaders.vfx.effects.LevelsEffect;
+import com.crashinvaders.vfx.effects.VfxEffect;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +31,8 @@ public class SimpleLightningBolt extends Group {
     protected final Texture halfCircle,lineSegment;
     protected float thickness;
     private Interpolation interpolation;
+    private VfxManager vfxManager;
+    private VfxEffect effect;
     public SimpleLightningBolt(Vector2 source, Vector2 dest, Color color, Texture halfCircle, Texture lineSegment){
         maxAlpha=1.0f;
         fadeDuration=0.5f;
@@ -37,6 +44,8 @@ public class SimpleLightningBolt extends Group {
         this.lineSegment=lineSegment;
         this.thickness=2.0f;
         this.interpolation=Interpolation.linear;
+        vfxManager=new VfxManager(Pixmap.Format.RGBA8888);
+        effect=new BloomEffect();
         createBolt();
     }
 
@@ -126,10 +135,16 @@ public class SimpleLightningBolt extends Group {
     public void draw(Batch batch, float parentAlpha) {
 
         batch.flush();
+
+//        vfxManager.cleanUpBuffers();
+//        vfxManager.beginInputCapture();
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
         super.draw(batch, parentAlpha);
         batch.flush();
+//        vfxManager.endInputCapture();
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//        vfxManager.applyEffects();
+//        vfxManager.renderToScreen();
     }
 
     @Override

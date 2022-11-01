@@ -18,6 +18,9 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import effects.awesome.ScreenController;
 import effects.awesome.lightning.MovingLightningBolt;
 import effects.awesome.lightning.SimpleLightningBolt;
+import effects.awesome.ripple.Ripple;
+import effects.awesome.sweep.HorizontalSweep;
+import effects.awesome.sweep.Sweep;
 import effects.awesome.water.Water;
 
 public class BoardScreen extends UIScreen{
@@ -52,14 +55,29 @@ public class BoardScreen extends UIScreen{
         Texture halfCircle=new Texture("half_circle.png");
         halfCircle.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
+        Texture sweepTexture=new Texture("line_faded.png");
+        sweepTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        TextureRegion sweepRegion=new TextureRegion(sweepTexture);
+
         group.addListener(new InputListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 
+                float sweepWidth=MathUtils.random(width/2f,width);
+                float sweepHeight=MathUtils.random(height*0.05f,height*0.1f);
+                float sweepX=(width-sweepWidth)/2f;
+                float sweepY=y;
+
+                Color lineColor=new Color(1,1,1,0.5f);
+                Sweep sweep=new HorizontalSweep(sweepRegion,lineColor);
+                sweep.setSize(sweepWidth,sweepHeight);
+                sweep.setPosition(sweepX,sweepY);
+                sweep.show(group);
+
                 Vector2 source=new Vector2(width/2f,height/2f);
                 Vector2 des=new Vector2(x,y);
                 Color color=new Color(MathUtils.random(0.0f,1.0f),MathUtils.random(0.0f,1.0f),MathUtils.random(0.0f,1.0f),1.0f);
-                group.addAction(Actions.repeat(MathUtils.random(5,10),Actions.delay(0.05f,Actions.run(new Runnable() {
+                group.addAction(Actions.repeat(MathUtils.random(2,5),Actions.delay(0.05f,Actions.run(new Runnable() {
                     @Override
                     public void run() {
                         Gdx.app.postRunnable(new Runnable() {
@@ -80,6 +98,8 @@ public class BoardScreen extends UIScreen{
             }
         });
 
+        stage.addActor(group);
+
         Texture columnTexture=new Texture("water_column.png");
         columnTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -87,7 +107,6 @@ public class BoardScreen extends UIScreen{
         particleTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         water=new Water(new TextureRegion(columnTexture),new TextureRegion(particleTexture),100);
         water.setSize(width,height);
-        stage.addActor(water);
 
         water.setTouchable(Touchable.enabled);
         water.addListener(new InputListener(){

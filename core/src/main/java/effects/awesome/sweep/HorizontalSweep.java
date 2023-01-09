@@ -1,59 +1,54 @@
 package effects.awesome.sweep;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-
-import space.earlygrey.shapedrawer.ShapeDrawer;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class HorizontalSweep extends Sweep{
-    private ShapeDrawer shapeDrawer;
-    public HorizontalSweep(TextureRegion region, Color color) {
-        super(region, color);
-    }
-
-    public HorizontalSweep(TextureRegion region, Color color, int counts) {
-        super(region, color, counts);
-    }
-
-//    @Override
-//    protected void layoutSweep() {
-//        float width=getWidth();
-//        float height=getHeight();
-//
-//        float lineX=0;
-//        float lineY=0;
-//        for (Image line:lines){
-//            float lineHeight=height/3f;
-//            line.setSize(width,lineHeight);
-//            line.setPosition(lineX,lineY);
-//            lineY+=lineHeight;
-//        }
-//    }
-
-
-    @Override
-    protected void layoutSweep() {
-
-    }
-
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        if (shapeDrawer==null){
-            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.WHITE);
-            pixmap.drawPixel(0, 0);
-            Texture texture = new Texture(pixmap); //remember to dispose of later
-            pixmap.dispose();
-            TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
-            shapeDrawer=new ShapeDrawer(batch,region);
+    public HorizontalSweep(TextureRegion region,float height, Vector2 from, Vector2 to, Vector2 origin, Color color, int counts) {
+        super(region, from, to, origin, color, counts);
+        float width=from.dst(to);
+        setSize(width,height);
+        setOrigin(from.dst(origin),height/2f);
+        float minLineHeight=height/(2f*lines.size());
+        float maxLineHeight=height/(lines.size());
+        Table lineTable=new Table();
+        for (Image line:lines){
+            float lineHeight= MathUtils.random(minLineHeight,maxLineHeight);
+            lineTable.add(line).width(width).height(lineHeight).expandY();
+            lineTable.row();
         }
+        lineTable.setSize(width,height);
+        lineTable.setTransform(true);
+        addActor(lineTable);
+        setPosition(from.x,from.y-height/2f);
 
-        shapeDrawer.filledCircle(getX(),getY(),getHeight()/2f);
-        shapeDrawer.circle(getX(),getY(),getHeight(),10);
+        Image image=new Image(region);
+        image.setSize(width,height);
+        Color fadeColor=new Color(color);
+        fadeColor.a*=0.5f;
+        image.setColor(fadeColor);
+        addActor(image);
+    }
+
+    @Override
+    public void show(Stage stage) {
+
+        setScaleX(0);
+        addAction(Actions.sequence(
+                Actions.fadeOut(0),
+                Actions.parallel(
+                        Actions.fadeIn(0.5f),
+                        Actions.scaleTo(1,1,0.5f)
+                ),
+                Actions.fadeOut(0.2f),
+                Actions.removeActor()
+        ));
+        stage.addActor(this);
     }
 }

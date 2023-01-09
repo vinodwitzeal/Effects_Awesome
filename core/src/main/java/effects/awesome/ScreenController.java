@@ -11,6 +11,8 @@ import dev.lyze.gdxtinyvg.TinyVG;
 import dev.lyze.gdxtinyvg.TinyVGAssetLoader;
 import effects.awesome.ui.screens.BoardScreen;
 import effects.awesome.ui.screens.DailySpinScreen;
+import effects.awesome.ui.screens.LoginScreen;
+import effects.awesome.ui.screens.RoundedRectangleScreen;
 import effects.awesome.ui.screens.UIScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
@@ -24,7 +26,7 @@ public class ScreenController implements ApplicationListener {
 	@Override
 	public void create() {
 		tinyVGAssetLoader=new TinyVGAssetLoader();
-		setScreen(new BoardScreen(this));
+		setScreen(new LoginScreen(this));
 	}
 
 	public void setScreen(UIScreen screen){
@@ -51,7 +53,7 @@ public class ScreenController implements ApplicationListener {
 
 	@Override
 	public void render() {
-		ScreenUtils.clear(Color.BROWN,false);
+		ScreenUtils.clear(Color.WHITE,false);
 		if (screen!=null)screen.render(Gdx.graphics.getDeltaTime());
 	}
 

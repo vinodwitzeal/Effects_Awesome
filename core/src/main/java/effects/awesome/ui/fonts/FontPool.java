@@ -1,90 +1,126 @@
 package effects.awesome.ui.fonts;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 public class FontPool {
-    private final Map<String, Font> fonts;
-    private final Map<String, BitmapFont.BitmapFontData> fontDataMap;
-    private final Map<String, Texture> textureMap;
-    private ShaderProgram shaderProgram;
+    private static FontPool pool;
+    private HashMap<String, Font> fontHashMap = new HashMap<String, Font>();
+    private HashMap<FontType, FontData> dataHashMap = new HashMap<FontType, FontData>();
+    private ShaderProgram distanceShader;
+    private float density;
 
     private FontPool() {
-        fonts = Collections.synchronizedMap(new HashMap<>());
-        fontDataMap = Collections.synchronizedMap(new HashMap<>());
-        textureMap = Collections.synchronizedMap(new HashMap<>());
-        shaderProgram = new ShaderProgram(Gdx.files.internal("shaders/distance.vert"), Gdx.files.internal("shaders/distance.frag"));
-        if (!shaderProgram.isCompiled()) {
-            throw new RuntimeException("Font shader not compiled");
-        }
+        this.density =Math.round(Math.min(Gdx.graphics.getWidth(),Gdx.graphics.getHeight())/360.0f);
+        clear();
+        loadShader();
     }
 
-    private Font getFont(FontType type) {
-        String fontName = type.getName();
-        if (fonts.containsKey(fontName)) {
-            return fonts.get(fontName);
-        } else {
-            BitmapFont.BitmapFontData fontData = getFontData(fontName);
-            TextureRegion region = new TextureRegion(getTexture(fontName));
-            Font font = new Font(fontData, region, shaderProgram);
-            fonts.put(fontName, font);
-            return font;
-        }
-    }
-
-    private BitmapFont.BitmapFontData getFontData(String name) {
-        if (fontDataMap.containsKey(name)) {
-            return fontDataMap.get(name);
-        } else {
-            BitmapFont.BitmapFontData fontData = new BitmapFont.BitmapFontData(Gdx.files.internal("fonts/" + name + ".fnt"), false);
-            fontDataMap.put(name, fontData);
-            return fontData;
-        }
-    }
-
-    private Texture getTexture(String fontName) {
-        if (textureMap.containsKey(fontName)) {
-            return textureMap.get(fontName);
-        } else {
-            Texture texture = new Texture("fonts/" + fontName + ".png");
-            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            textureMap.put(fontName, texture);
-            return texture;
-        }
-    }
-
-    private void disposeAll() {
-        for (Font font : fonts.values()) {
-            font.dispose();
-        }
-        shaderProgram.dispose();
-    }
-
-    private static FontPool instance;
-
-    private static FontPool instance() {
-        if (instance == null) {
-            instance = new FontPool();
-        }
-        return instance;
-    }
-
-    public static Font obtain(FontType type) {
-        return instance().getFont(type);
+    public static void init() {
+        pool = null;
     }
 
     public static void dispose() {
-        if (instance != null) {
-            instance.disposeAll();
+        if (pool != null) {
+            pool.disposePool();
         }
-        instance = null;
+    }
+
+    private static FontPool instance() {
+        if (pool == null) {
+            pool = new FontPool();
+        }
+        return pool;
+    }
+
+    public static Font obtain(FontType type, float size) {
+        Font font = instance().getFont(type, size);
+        font.setFontStyle(null);
+        return font;
+    }
+
+
+    public static Font obtainGame(FontType type, float size) {
+        return instance().getGameFont(type, size);
+    }
+
+    private void clear() {
+        fontHashMap.clear();
+        dataHashMap.clear();
+    }
+
+    private void loadShader() {
+        ShaderProgram.pedantic = false;
+        distanceShader = new ShaderProgram(Gdx.files.internal("shaders/distance.vert"), Gdx.files.internal("shaders/distance.frag"));
+        boolean compiled = distanceShader.isCompiled();
+    }
+
+
+    private synchronized Font getGameFont(FontType type, float size) {
+        if (distanceShader == null) loadShader();
+        size = Math.round(size);
+        String name = "g" + type.value() + size;
+        if (fontHashMap.containsKey(name)) {
+            Font font = fontHashMap.get(name);
+            font.setFontStyle(null);
+            return fontHashMap.get(name);
+        } else {
+            if (dataHashMap.containsKey(type)) {
+                FontData fontData = dataHashMap.get(type);
+                Font font = new Font(fontData, size, distanceShader);
+                fontHashMap.put(name, font);
+                return font;
+            } else {
+                FontData fontData = new FontData(type);
+                dataHashMap.put(type, fontData);
+                Font font = new Font(fontData, size, distanceShader);
+                fontHashMap.put(name, font);
+                return font;
+            }
+        }
+    }
+
+
+    private synchronized Font getFont(FontType type, float size) {
+        if (distanceShader == null) loadShader();
+        size = density * size;
+        size = Math.round(size);
+        String name = type.value() + size;
+        if (fontHashMap.containsKey(name)) {
+            Font font = fontHashMap.get(name);
+            font.setFontStyle(null);
+            return fontHashMap.get(name);
+        } else {
+            if (dataHashMap.containsKey(type)) {
+                FontData fontData = dataHashMap.get(type);
+                Font font = new Font(fontData, size, distanceShader);
+                fontHashMap.put(name, font);
+                return font;
+            } else {
+                FontData fontData = new FontData(type);
+                dataHashMap.put(type, fontData);
+                Font font = new Font(fontData, size, distanceShader);
+                fontHashMap.put(name, font);
+                return font;
+            }
+        }
+    }
+
+    private void disposePool() {
+        distanceShader.dispose();
+        for (Font font : fontHashMap.values()) {
+            if (font != null) {
+                font.dispose();
+            }
+        }
+
+        for (FontData data : dataHashMap.values()) {
+            if (data != null) {
+                data.dispose();
+            }
+        }
     }
 }

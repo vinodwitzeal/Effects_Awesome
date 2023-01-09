@@ -1,24 +1,15 @@
 package effects.awesome.ui.widgets;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.RepeatAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
-import com.badlogic.gdx.utils.Timer;
 
 import effects.awesome.ui.RadialSprite;
-import effects.awesome.ui.fonts.FontType;
 
 public class DailySpin extends WidgetGroup {
     private final int REST=0,SPINNING=1,STOPPING=2,STOPPED=3;
@@ -154,13 +145,13 @@ public class DailySpin extends WidgetGroup {
 
     public class SectorDetails extends Table{
         public SectorDetails(String prizeValue,String description){
-            UILabel.UILabelStyle titleStyle=new UILabel.UILabelStyle(FontType.Noto,16);
-            titleStyle.fontColor=Color.BLACK;
-            UILabel titleLabel=new UILabel(prizeValue,titleStyle);
-            add(titleLabel).row();
-            Image image=new Image(iconRegion);
-            float imageSize=titleStyle.font.getLineHeight();
-            add(image).width(imageSize).height(imageSize);
+//            UILabel.UILabelStyle titleStyle=new UILabel.UILabelStyle(FontType.Noto,16);
+//            titleStyle.fontColor=Color.BLACK;
+//            UILabel titleLabel=new UILabel(prizeValue,titleStyle);
+//            add(titleLabel).row();
+//            Image image=new Image(iconRegion);
+//            float imageSize=titleStyle.font.getLineHeight();
+//            add(image).width(imageSize).height(imageSize);
         }
     }
 }

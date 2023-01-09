@@ -5,37 +5,69 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.DistanceFieldFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 
 public class Font extends DistanceFieldFont {
-    private final String SMOOTHING = "u_smoothing";
-    private final String ENABLE_SHADOW = "enableShadow", SHADOW_OFFSET = "u_shadow", SHADOW_COLOR = "u_shadowColor";
-    private final String ENABLE_OUTLINE = "enableOutline", OUTLINE_WIDTH = "u_outline", OUTLINE_COLOR = "u_outlineColor";
+    private static final String SMOOTHING = "u_smoothing";
+    private static final String ENABLE_SHADOW = "enableShadow", SHADOW_OFFSET = "u_shadow", SHADOW_COLOR = "u_shadowColor";
+    private static final String ENABLE_OUTLINE = "enableOutline", OUTLINE_WIDTH = "u_outline", OUTLINE_COLOR = "u_outlineColor";
+    private static final String ENABLE_GRADIENT = "enableGradient", TOP_COLOR = "u_topColor", BOTTOM_COLOR = "u_bottomColor";
+    private final Vector2 shadow = new Vector2();
+    private int enableShadow, enableOutline, enableGradient;
+    private float outline, smoothing;
+    private Color shadowColor, outlineColor;
+    private float shadowOffset;
+
     private ShaderProgram defaultShader, distanceShader;
-    private float smoothing;
-    private int enableShadow,enableOutline;
-    private Vector2 shadow;
-    private float outline;
-    private Color shadowColor,outlineColor;
-    public Font(BitmapFontData data, TextureRegion region,ShaderProgram distanceShader) {
-        super(data, region, false);
-        this.distanceShader=distanceShader;
-        this.enableShadow=0;
-        this.enableOutline=0;
-        this.shadow=new Vector2(0,0);
-        this.outline=0.0f;
-        this.shadowColor=Color.valueOf("000000");
-        this.outlineColor=Color.valueOf("000000");
+    private Color topColor, bottomColor;
+
+    protected Font(FontData fontData, float size, ShaderProgram distanceShader) {
+        super(fontData.getData(), fontData.getTexture(size), false);
+        shadowColor = Color.BLACK;
+        outlineColor = Color.GRAY;
+        this.smoothing = fontData.getSmoothing(size);
+        this.distanceShader = distanceShader;
+        this.shadowOffset = 0.002f;
+        topColor=Color.CLEAR;
+        bottomColor=Color.CLEAR;
+        float fontScale=fontData.getScale(size);
+        if (fontScale==0.0f){
+            fontScale=0.2f;
+        }
+        getData().setScale(fontScale);
     }
 
-    public void apply(float fontScale){
-        this.smoothing=fontScale/4.0f;
-    }
 
-    public void reset(){
-        getData().setScale(1.0f);
+    public void setFontStyle(FontStyle style) {
+        if (style == null) {
+            enableOutline = 0;
+            this.outline = 0;
+            enableShadow = 0;
+            shadowColor = Color.CLEAR;
+            outlineColor = Color.CLEAR;
+            enableGradient = 0;
+            topColor=Color.CLEAR;
+            bottomColor=Color.CLEAR;
+        } else {
+            if (style.outline > 0) {
+                this.outline = style.outline;
+                enableOutline = 1;
+            }
+            if (style.outlineColor != null)
+                outlineColor = style.outlineColor;
+
+            if (style.shadowColor != null) {
+                enableShadow = 1;
+                shadow.set(style.getShadowX() * shadowOffset, style.getShadowY() * shadowOffset);
+                shadowColor = style.shadowColor;
+            }
+            if (style.topColor != null && style.bottomColor != null) {
+                enableGradient = 1;
+                topColor = style.topColor;
+                bottomColor = style.bottomColor;
+            }
+        }
     }
 
     @Override
@@ -59,6 +91,9 @@ public class Font extends DistanceFieldFont {
             distanceShader.setUniformf(OUTLINE_COLOR, outlineColor);
             distanceShader.setUniformf(SHADOW_OFFSET, shadow);
             distanceShader.setUniformf(SHADOW_COLOR, shadowColor);
+            distanceShader.setUniformi(ENABLE_GRADIENT, enableGradient);
+            distanceShader.setUniformf(TOP_COLOR, topColor);
+            distanceShader.setUniformf(BOTTOM_COLOR, bottomColor);
         }
 
         private void removeShader(Batch batch) {
@@ -87,4 +122,5 @@ public class Font extends DistanceFieldFont {
             removeShader(spriteBatch);
         }
     }
+
 }

@@ -26,7 +26,7 @@ public class ScreenController implements ApplicationListener {
 	@Override
 	public void create() {
 		tinyVGAssetLoader=new TinyVGAssetLoader();
-		setScreen(new LoginScreen(this));
+		setScreen(new BoardScreen(this));
 	}
 
 	public void setScreen(UIScreen screen){
